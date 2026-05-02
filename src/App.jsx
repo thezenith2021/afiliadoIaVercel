@@ -2330,6 +2330,9 @@ function Alerts({ alerts = [], onAlertAction, onCreateVideo, setActiveTab }) {
 }
 
 
+const STORE_ICONS = ["🛒","📦","🛍️","👗","🏷️","🌿","💄","🍫","🏪","💅","👠","🎁","🧴","🧸","📱","💻","🏋️","🎮","🍕","☕","🌺","💍","🎽","🏠","🚗","📚","🎵","🌈","⚡","🦋"];
+const STORE_COLORS = ["#00FFD1","#FF6B6B","#FFD700","#B47EFF","#FF8C00","#0080FF","#E91E8C","#00A86B","#FF5722","#1877F2"];
+
 function Settings({ setShowPermissions }) {
   const [connected, setConnected] = useState({ amazon: true });
   const [customStores, setCustomStores] = useState([]);
