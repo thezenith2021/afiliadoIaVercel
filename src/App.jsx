@@ -163,7 +163,7 @@ const TAB_ICONS = {
   Dashboard: "⚡", Produtos: "🛒", Vídeos: "🎬", Automação: "🤖", Links: "🔗", Alertas: "🔔", Configurações: "⚙️"
 };
 
-const formatCurrency = (n) => `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+// formatCurrency removed
 
 function AnimatedNumber({ value, prefix = "", suffix = "" }) {
   const [display, setDisplay] = useState(0);
@@ -1215,7 +1215,7 @@ function VideoGallery({ videos, onPostAll }) {
   const [progress, setProgress] = useState(0);
   const [liked, setLiked] = useState({});
   const [saved, setSaved] = useState({});
-  const progressRef = useRef(null);
+  // progressRef removed
 
   const DEFAULT_VIDEOS = [
     { id: 1, title: "Tênis que VIRALIZOU! 🔥", views: "128K", likes: "14K", product: "Nike Air Max", platform: "TikTok", img: "👟", duration: "0:28", commission: "R$38,99" },
@@ -1504,7 +1504,7 @@ function Automation({ botActive = false, setBotActive, botLog = [], setBotLog, s
   const [autoMode, setAutoMode] = useState(false);
   const [msgPlatform, setMsgPlatform] = useState("whatsapp");
   const [localBotActive, setLocalBotActive] = useState(botActive);
-  const [botTick, setBotTick] = useState(0);
+  const [, setBotTick] = useState(0);
   const [schedule, setSchedule] = useState({ tiktok: "20:00", instagram: "19:30", youtube: "21:00", facebook: "18:00" });
   const [editSchedule, setEditSchedule] = useState(false);
 
@@ -1539,6 +1539,7 @@ function Automation({ botActive = false, setBotActive, botLog = [], setBotLog, s
       });
     }, 2800);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localBotActive]);
 
   return (
@@ -1891,7 +1892,7 @@ function detectarLoja(url) {
 // ─── THUMBNAILS POR LOJA ─────────────────────────────────────
 function getThumbnailUrl(lojaId, url) {
   // Tenta gerar thumbnail via serviço de screenshot
-  const encoded = encodeURIComponent(url);
+  // encoded removed
   // Usa o favicon + screenshot da página como fallback visual
   if (lojaId === "mercadolivre") return "https://http2.mlstatic.com/frontend-assets/homes-palpatine/web/v1.12.0/mercadolibre/images/og-image.png";
   if (lojaId === "amazon")       return "https://m.media-amazon.com/images/G/32/social/site-wide-social-image._CB627492198_.png";
@@ -3042,7 +3043,6 @@ ${product?.name || "Produto"} — a escolha certa!
 // ═══════════════════════════════════════════════════════════════
 function StorePermissions({ onClose }) {
   const [selectedStore, setSelectedStore] = useState(null);
-  const [selectedPlatform, setSelectedPlatform] = useState(null);
 
   const PLATFORMS = [
     { id: "tiktok",    name: "TikTok",     icon: "🎵", color: "#FF0050" },
@@ -3884,27 +3884,6 @@ function VideoCreatorModal({ product, script, onClose, onVideoReady }) {
     </div>
   );
 }
-const STORE_COLORS = [
-  "#00FFD1",
-  "#0080FF",
-  "#FF4D4D",
-  "#FFD700",
-  "#7B61FF",
-  "#00C853",
-  "#FF6F00",
-  "#FF00AA"
-];
-
-const STORE_ICONS = [
-  "🛒",
-  "🏪",
-  "📦",
-  "💰",
-  "🔥",
-  "⭐",
-  "🎯",
-  "📱"
-];
 export default function App() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const contentRef = useRef(null);
@@ -3983,9 +3962,7 @@ export default function App() {
     setUser(u => ({ ...u, ...updates }));
   };
 
-  const handleOpenWAEditor = (product) => {
-    setWaEditorProduct(product);
-  };
+  // handleOpenWAEditor: use setWaEditorProduct directly
 
   const handleAlertAction = (alert) => {
     if (alert.produto) {
