@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AfiliadoAI — Guia Completo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+:root{--bg:#060810;--card:#0c1018;--card2:#111620;--border:#1c2535;--neon:#00ffd1;--gold:#ffd700;--purple:#a78bfa;--red:#f87171;--orange:#fb923c;--blue:#38bdf8;--green:#4ade80;--text:#e2e8f0;--muted:#4a5568;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,#00ffd108 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* PROGRESS */
+#pbar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100;}
+#pfill{height:100%;width:0%;background:linear-gradient(90deg,var(--neon),var(--blue));transition:width .4s ease;box-shadow:0 0 10px var(--neon);}
+
+/* HEADER */
+.hdr{text-align:center;padding:56px 20px 32px;position:relative;z-index:1;}
+.logo{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:8px 18px;margin-bottom:20px;}
+.logo span:nth-child(2){color:#fff;font-weight:800;font-size:16px;}
+.badge{background:var(--neon);color:#000;font-size:9px;font-weight:800;padding:2px 8px;border-radius:99px;letter-spacing:1px;}
+.hdr h1{font-size:clamp(24px,6vw,34px);font-weight:800;line-height:1.2;margin-bottom:10px;}
+.hdr h1 em{color:var(--neon);font-style:normal;}
+.hdr p{color:var(--muted);font-size:13px;line-height:1.7;max-width:280px;margin:0 auto;}
+
+/* OVERVIEW TABS */
+.ovtabs{display:flex;margin:0 16px 24px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;z-index:1;}
+.ovt{flex:1;padding:12px 4px;text-align:center;cursor:pointer;border-right:1px solid var(--border);transition:all .2s;}
+.ovt:last-child{border-right:none;}
+.ovt.active{background:#00122a;}
+.ovt.done{background:#001a10;}
+.ovt-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;margin:0 auto 5px;background:var(--border);color:var(--muted);transition:all .3s;}
+.ovt.active .ovt-num{background:var(--blue);color:#000;box-shadow:0 0 14px var(--blue);}
+.ovt.done .ovt-num{background:var(--neon);color:#000;box-shadow:0 0 10px var(--neon);}
+.ovt-lbl{font-size:9px;font-weight:700;color:var(--muted);line-height:1.3;}
+.ovt.active .ovt-lbl{color:var(--blue);}
+.ovt.done .ovt-lbl{color:var(--neon);}
+
+/* SECTION */
+.sec{margin:0 16px 16px;background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative;z-index:1;display:none;}
+.sec.active{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+.sec-hdr{padding:20px;display:flex;align-items:center;gap:14px;}
+.sec-ico{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.sec-ttl h2{font-size:16px;font-weight:800;color:#fff;margin-bottom:2px;}
+.sec-ttl p{font-size:11px;color:var(--muted);}
+.sec-badge{font-size:9px;font-weight:800;padding:4px 10px;border-radius:99px;letter-spacing:.8px;flex-shrink:0;}
+
+/* STEPS */
+.steps{padding:0 16px 4px;}
+.step{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid #0d1520;}
+.step:last-child{border-bottom:none;}
+.snum{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:1px;}
+.scont h4{color:#fff;font-size:13px;font-weight:700;margin-bottom:4px;line-height:1.4;}
+.scont p{color:#8892b0;font-size:12px;line-height:1.6;}
+.scont strong{color:var(--neon);}
+.scont .w{color:var(--gold);}
+.scont .d{color:var(--red);}
+
+/* CODE */
+.code{background:#020508;border:1px solid #1a2a3a;border-radius:10px;padding:12px 14px;margin-top:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--neon);line-height:1.8;white-space:pre-wrap;word-break:break-all;position:relative;}
+.cbtn{position:absolute;top:8px;right:8px;background:#1a2a3a;border:none;border-radius:6px;padding:4px 10px;color:var(--muted);font-size:10px;cursor:pointer;font-family:'Syne',sans-serif;transition:color .2s;}
+.cbtn:hover,.cbtn.ok{color:var(--neon);}
+
+/* BUTTONS */
+.abtn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:99px;border:none;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;cursor:pointer;text-decoration:none;margin-top:10px;}
+.abtn.p{background:linear-gradient(135deg,var(--neon),var(--blue));color:#000;box-shadow:0 4px 16px #00ffd133;}
+.abtn.g{background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;}
+.abtn.gr{background:linear-gradient(135deg,var(--green),#16a34a);color:#000;}
+.abtn.r{background:linear-gradient(135deg,#ff6b35,#ff8c00);color:#000;}
+
+/* TIP / ALERT */
+.tip{background:#0a1520;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 12px;margin-top:8px;font-size:12px;color:#b0bec5;line-height:1.7;}
+.tip strong{color:var(--gold);}
+.alrt{background:#1a0000;border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:10px 12px;margin-top:8px;font-size:12px;color:#c87070;line-height:1.7;}
+.alrt strong{color:var(--red);}
+.ok-box{background:#001a10;border-left:3px solid var(--neon);border-radius:0 8px 8px 0;padding:10px 12px;margin-top:8px;font-size:12px;color:#70c890;line-height:1.7;}
+.ok-box strong{color:var(--neon);}
+
+/* CHECKLIST */
+.cl{margin-top:12px;display:flex;flex-direction:column;gap:5px;}
+.ci{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--card2);border-radius:10px;font-size:12px;color:var(--muted);cursor:pointer;border:1px solid transparent;transition:all .2s;user-select:none;}
+.ci.ck{color:var(--neon);border-color:#00ffd122;background:#001a10;}
+.cbox{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .2s;}
+.ci.ck .cbox{background:var(--neon);border-color:var(--neon);color:#000;}
+
+/* ENV TABLE */
+.etbl{width:100%;margin-top:10px;border-collapse:collapse;font-size:11px;}
+.etbl tr{border-bottom:1px solid #0d1520;}
+.etbl td{padding:8px 6px;vertical-align:top;}
+.etbl td:first-child{font-family:'DM Mono',monospace;color:var(--purple);width:48%;word-break:break-all;}
+.etbl td:last-child{font-family:'DM Mono',monospace;color:var(--neon);word-break:break-all;}
+
+/* NAV */
+.nav{display:flex;gap:10px;padding:16px;}
+.nb{flex:1;padding:13px;border:none;border-radius:12px;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:all .2s;}
+.nb.pv{background:var(--card2);border:1px solid var(--border);color:var(--muted);}
+.nb.nx{background:linear-gradient(135deg,var(--neon),var(--blue));color:#000;box-shadow:0 4px 20px #00ffd133;}
+.nb.fn{background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;}
+.nb:disabled{opacity:.3;cursor:default;}
+
+/* COMPLETION */
+.done-box{margin:16px;padding:28px 20px;background:linear-gradient(135deg,#001a10,#000d1a);border:2px solid var(--neon);border-radius:20px;text-align:center;position:relative;z-index:1;display:none;box-shadow:0 0 40px #00ffd122;}
+.done-box.show{display:block;animation:fadeUp .4s ease;}
+.done-box h2{color:var(--neon);font-size:22px;font-weight:800;margin:10px 0 6px;}
+.done-box p{color:var(--muted);font-size:13px;line-height:1.7;}
+.next-steps{margin-top:16px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:left;}
+.ns-title{color:var(--gold);font-weight:700;font-size:13px;margin-bottom:8px;}
+.ns-item{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid #1a2035;font-size:12px;color:#8892b0;line-height:1.6;}
+.ns-item:last-child{border-bottom:none;}
+.ns-item span:first-child{color:var(--neon);flex-shrink:0;font-weight:700;}
+</style>
+</head>
+<body>
+<div id="pbar"><div id="pfill"></div></div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">
+    <span>⚡</span>
+    <span>AfiliadoAI</span>
+    <span class="badge">PRO</span>
+  </div>
+  <h1>Como colocar o app<br><em>funcionando de verdade</em></h1>
+  <p>Siga os 5 passos em ordem. Tempo total estimado: 2-3 horas.</p>
+</div>
+
+<!-- OVERVIEW TABS -->
+<div class="ovtabs">
+  <div class="ovt active" id="ov1" onclick="go(1)">
+    <div class="ovt-num">1</div>
+    <div class="ovt-lbl">GitHub<br>+ Vercel</div>
+  </div>
+  <div class="ovt" id="ov2" onclick="go(2)">
+    <div class="ovt-num">2</div>
+    <div class="ovt-lbl">Firebase<br>Banco</div>
+  </div>
+  <div class="ovt" id="ov3" onclick="go(3)">
+    <div class="ovt-num">3</div>
+    <div class="ovt-lbl">Mercado<br>Livre</div>
+  </div>
+  <div class="ovt" id="ov4" onclick="go(4)">
+    <div class="ovt-num">4</div>
+    <div class="ovt-lbl">Variáveis<br>Vercel</div>
+  </div>
+  <div class="ovt" id="ov5" onclick="go(5)">
+    <div class="ovt-num">5</div>
+    <div class="ovt-lbl">Testar<br>Tudo</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PASSO 1 — GITHUB + VERCEL
+══════════════════════════════════════ -->
+<div class="sec active" id="sec1">
+  <div class="sec-hdr">
+    <div class="sec-ico" style="background:#00ffd122;border:1px solid #00ffd133;">🐙</div>
+    <div class="sec-ttl">
+      <h2>Passo 1 — GitHub + Vercel</h2>
+      <p>Subir os arquivos e deixar o app online</p>
+    </div>
+    <div class="sec-badge" style="background:#00ffd122;color:var(--neon);border:1px solid #00ffd133;">~30 min</div>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="snum" style="background:#00ffd122;color:var(--neon);">📥</div>
+      <div class="scont" style="flex:1">
+        <h4>Baixar e extrair o ZIP</h4>
+        <p>Role para cima nesta conversa → encontre o arquivo <strong>afiliadoai-vercel.zip</strong> → clique em <strong>Download</strong></p>
+        <div class="tip"><strong>Depois:</strong> Vá na pasta de Downloads do seu celular/computador → pressione e segure o ZIP → <strong>Extrair aqui</strong> → vai aparecer a pasta <strong>afiliadoai</strong></div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Baixei o arquivo afiliadoai-vercel.zip</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Extraí o ZIP e tenho a pasta afiliadoai</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#00ffd122;color:var(--neon);">1</div>
+      <div class="scont" style="flex:1">
+        <h4>Criar repositório no GitHub</h4>
+        <p>Acesse o GitHub e crie um repositório para guardar os arquivos do app</p>
+        <a class="abtn p" href="https://github.com/new" target="_blank">🐙 Abrir GitHub → New Repository</a>
+        <div class="tip">
+          <strong>Preencha assim:</strong><br>
+          • Repository name: <strong>afiliadoai</strong><br>
+          • Visibilidade: <strong>Public</strong><br>
+          • Clique no botão verde <strong>Create repository</strong>
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Repositório afiliadoai criado no GitHub ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#00ffd122;color:var(--neon);">2</div>
+      <div class="scont" style="flex:1">
+        <h4>Subir todos os arquivos</h4>
+        <p>Na página do repositório criado, clique no link azul <strong>"uploading an existing file"</strong></p>
+        <div class="tip">
+          <strong>Abra a pasta afiliadoai e arraste:</strong><br>
+          📁 Pasta <strong>src/</strong> (App.jsx, firebase.js, etc)<br>
+          📁 Pasta <strong>public/</strong> (index.html)<br>
+          📄 <strong>package.json</strong><br>
+          📄 <strong>vercel.json</strong><br>
+          📄 <strong>.gitignore</strong><br>
+          📄 <strong>README.md</strong>
+        </div>
+        <div class="alrt"><strong>⚠️ Importante:</strong> Arraste TANTO as pastas quanto os arquivos soltos. Se esquecer algum o app pode não funcionar.</div>
+        <p style="margin-top:8px;font-size:12px;color:#8892b0">Depois role a página para baixo e clique em <strong style="color:var(--neon)">Commit changes</strong></p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Todos os arquivos enviados ao GitHub ✅</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Cliquei em "Commit changes" ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#00ffd122;color:var(--neon);">3</div>
+      <div class="scont" style="flex:1">
+        <h4>Importar no Vercel</h4>
+        <p>Abra o Vercel e importe o repositório que você acabou de criar</p>
+        <a class="abtn p" href="https://vercel.com/new" target="_blank">🚀 Abrir Vercel → New Project</a>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Clique em <strong>Continue with GitHub</strong><br>
+          2. Encontre o repositório <strong>afiliadoai</strong> → clique em <strong>Import</strong><br>
+          3. <strong style="color:#f87171">NÃO clique em Deploy ainda!</strong><br>
+          4. Primeiro configure as variáveis no Passo 4
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Projeto importado no Vercel ✅</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="nav">
+    <button class="nb pv" disabled>← Início</button>
+    <button class="nb nx" onclick="go(2)">Firebase → 🔥</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PASSO 2 — FIREBASE
+══════════════════════════════════════ -->
+<div class="sec" id="sec2">
+  <div class="sec-hdr">
+    <div class="sec-ico" style="background:#ff6b3522;border:1px solid #ff6b3544;">🔥</div>
+    <div class="sec-ttl">
+      <h2>Passo 2 — Firebase</h2>
+      <p>Banco de dados para salvar cliques, vendas e usuários</p>
+    </div>
+    <div class="sec-badge" style="background:#ff6b3522;color:#ff6b35;border:1px solid #ff6b3533;">~45 min</div>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="snum" style="background:#ff6b3522;color:#ff6b35;">1</div>
+      <div class="scont" style="flex:1">
+        <h4>Criar projeto no Firebase</h4>
+        <a class="abtn r" href="https://console.firebase.google.com" target="_blank">🔥 Abrir Firebase Console</a>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Clique em <strong>"Criar um projeto"</strong><br>
+          2. Nome do projeto: <strong>afiliadoai</strong><br>
+          3. Clique em <strong>Continuar</strong><br>
+          4. Desative o Google Analytics (opcional)<br>
+          5. Clique em <strong>Criar projeto</strong><br>
+          6. Aguarde ~1 minuto ☕ e clique em <strong>Continuar</strong>
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Projeto afiliadoai criado no Firebase ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ff6b3522;color:#ff6b35;">2</div>
+      <div class="scont" style="flex:1">
+        <h4>Ativar Firestore Database</h4>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. No menu esquerdo clique em <strong>Firestore Database</strong><br>
+          2. Clique em <strong>"Criar banco de dados"</strong><br>
+          3. Selecione <strong>"Iniciar no modo de teste"</strong> → Avançar<br>
+          4. Região: selecione <strong>southamerica-east1 (São Paulo)</strong><br>
+          5. Clique em <strong>Ativar</strong> e aguarde
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Firestore Database ativado em São Paulo ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ff6b3522;color:#ff6b35;">3</div>
+      <div class="scont" style="flex:1">
+        <h4>Ativar autenticação anônima</h4>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Menu esquerdo → clique em <strong>Authentication</strong><br>
+          2. Clique em <strong>"Primeiros passos"</strong><br>
+          3. Na lista, clique em <strong>Anônimo</strong><br>
+          4. Ative a chave → clique em <strong>Salvar</strong>
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Autenticação Anônima ativada ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ff6b3522;color:#ff6b35;">4</div>
+      <div class="scont" style="flex:1">
+        <h4>Pegar as credenciais do Firebase</h4>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Clique na ⚙️ engrenagem (topo esquerdo) → <strong>Configurações do projeto</strong><br>
+          2. Role a página até <strong>"Seus apps"</strong><br>
+          3. Clique no ícone <strong>&lt;/&gt;</strong> (Web)<br>
+          4. Apelido do app: <strong>afiliadoai-web</strong><br>
+          5. Clique em <strong>Registrar app</strong><br>
+          6. Vai aparecer um bloco de código — <strong>copie todos os valores</strong>
+        </div>
+        <div class="alrt"><strong>⚠️ Guarde bem!</strong> Você vai precisar desses valores no Passo 4. Deixe a página aberta ou copie num bloco de notas.</div>
+        <div class="ok-box">
+          <strong>As credenciais vão parecer assim:</strong><br>
+          apiKey: "AIzaSy..."<br>
+          authDomain: "afiliadoai.firebaseapp.com"<br>
+          projectId: "afiliadoai-208b7"<br>
+          storageBucket: "afiliadoai.appspot.com"<br>
+          messagingSenderId: "123456789"<br>
+          appId: "1:123:web:abc"
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Credenciais do Firebase copiadas ✅</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="nav">
+    <button class="nb pv" onclick="go(1)">← GitHub</button>
+    <button class="nb nx" onclick="go(3)">Mercado Livre →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PASSO 3 — MERCADO LIVRE API
+══════════════════════════════════════ -->
+<div class="sec" id="sec3">
+  <div class="sec-hdr">
+    <div class="sec-ico" style="background:#ffe60022;border:1px solid #ffe60033;">🛒</div>
+    <div class="sec-ttl">
+      <h2>Passo 3 — API Mercado Livre</h2>
+      <p>Para buscar produtos reais com preço e imagem</p>
+    </div>
+    <div class="sec-badge" style="background:#ffe60022;color:#ffe600;border:1px solid #ffe60033;">~1 hora</div>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="snum" style="background:#ffe60022;color:#ffe600;">1</div>
+      <div class="scont" style="flex:1">
+        <h4>Acessar o portal de desenvolvedores</h4>
+        <a class="abtn g" href="https://developers.mercadolivre.com.br" target="_blank">🛒 Abrir ML Developers</a>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Clique em <strong>"Entrar"</strong> no canto superior direito<br>
+          2. Use sua conta do <strong>Mercado Livre</strong> para logar<br>
+          3. Se não tiver conta, crie uma em mercadolivre.com.br — é grátis
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Logado no portal de desenvolvedores ML ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ffe60022;color:#ffe600;">2</div>
+      <div class="scont" style="flex:1">
+        <h4>Criar sua aplicação</h4>
+        <div class="tip">
+          <strong>Preencha os campos assim:</strong><br>
+          • Nome: <strong>AfiliadoAI</strong><br>
+          • Descrição: <strong>App de afiliados com IA</strong><br>
+          • URL do site: <strong>https://afiliadoai.vercel.app</strong><br>
+          • URL de redirect: <strong>https://afiliadoai.vercel.app</strong><br>
+          • Scopes: marque <strong>read_catalog</strong> e <strong>public_info</strong><br>
+          • Clique em <strong>Salvar</strong>
+        </div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Aplicação AfiliadoAI criada no ML ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ffe60022;color:#ffe600;">3</div>
+      <div class="scont" style="flex:1">
+        <h4>Gerar o Access Token</h4>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Na página da sua aplicação, procure o botão <strong>"Gerar Token de Teste"</strong><br>
+          2. Clique nele<br>
+          3. Um token vai aparecer no formato:<br>
+          <span style="font-family:'DM Mono',monospace;color:#a78bfa;font-size:11px">APP_USR-1234567890-abcdef...</span><br>
+          4. <strong>Copie e guarde esse token</strong>
+        </div>
+        <div class="alrt"><strong>⚠️ Atenção:</strong> O token de teste expira em 6 horas. Para uso contínuo, implemente o fluxo OAuth do ML — há documentação em developers.mercadolivre.com.br</div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Access Token do ML copiado ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ffe60022;color:#ffe600;">🎬</div>
+      <div class="scont" style="flex:1">
+        <h4>API de Vídeo Gratuita — JSON2Video</h4>
+        <p>Para criar vídeos automáticos dos produtos <strong>sem pagar nada</strong></p>
+        <a class="abtn p" href="https://json2video.com/get-api-key/" target="_blank">🎬 Pegar API Key Grátis</a>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Acesse json2video.com/get-api-key<br>
+          2. Digite seu <strong>e-mail</strong><br>
+          3. Clique em <strong>"Get my free API Key"</strong><br>
+          4. Verifique seu e-mail — a key chega em minutos<br>
+          5. <strong>Copie e guarde a key</strong>
+        </div>
+        <div class="ok-box"><strong>✅ 100% grátis!</strong> Sem cartão de crédito. Inclui 600 segundos de vídeo para criar seus primeiros vídeos dos produtos.</div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>API Key do JSON2Video recebida no e-mail ✅</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="nav">
+    <button class="nb pv" onclick="go(2)">← Firebase</button>
+    <button class="nb nx" onclick="go(4)">Variáveis →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PASSO 4 — VARIÁVEIS NO VERCEL
+══════════════════════════════════════ -->
+<div class="sec" id="sec4">
+  <div class="sec-hdr">
+    <div class="sec-ico" style="background:#ffd70022;border:1px solid #ffd70033;">⚙️</div>
+    <div class="sec-ttl">
+      <h2>Passo 4 — Variáveis no Vercel</h2>
+      <p>Conectar Firebase e ML ao app e fazer o deploy</p>
+    </div>
+    <div class="sec-badge" style="background:#ffd70022;color:var(--gold);border:1px solid #ffd70033;">~20 min</div>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="snum" style="background:#ffd70022;color:var(--gold);">1</div>
+      <div class="scont" style="flex:1">
+        <h4>Abrir as configurações do projeto</h4>
+        <a class="abtn g" href="https://vercel.com/dashboard" target="_blank">⚙️ Abrir Vercel Dashboard</a>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Clique no projeto <strong>afiliadoai</strong><br>
+          2. Clique em <strong>Settings</strong> na barra do topo<br>
+          3. No menu lateral esquerdo clique em <strong>Environment Variables</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ffd70022;color:var(--gold);">2</div>
+      <div class="scont" style="flex:1">
+        <h4>Adicionar as variáveis uma por uma</h4>
+        <p>Para cada linha: cole o <strong>Nome</strong> no campo KEY e o <strong>Valor</strong> no campo VALUE → clique em <strong>Add</strong></p>
+        <table class="etbl">
+          <tr><td>REACT_APP_FIREBASE_API_KEY</td><td>AIzaSyBftM-l57eOALuvDuYq_n4qyAq_3ccwbOY</td></tr>
+          <tr><td>REACT_APP_FIREBASE_AUTH_DOMAIN</td><td>afiliadoai-208b7.firebaseapp.com</td></tr>
+          <tr><td>REACT_APP_FIREBASE_PROJECT_ID</td><td>afiliadoai-208b7</td></tr>
+          <tr><td>REACT_APP_FIREBASE_STORAGE_BUCKET</td><td>afiliadoai-208b7.firebasestorage.app</td></tr>
+          <tr><td>REACT_APP_FIREBASE_MESSAGING_SENDER_ID</td><td>307487016083</td></tr>
+          <tr><td>REACT_APP_FIREBASE_APP_ID</td><td>1:307487016083:web:6b5db01196fa65a21e3966</td></tr>
+          <tr><td>REACT_APP_ML_ACCESS_TOKEN</td><td style="color:#a78bfa">← Token do Mercado Livre (Passo 3)</td></tr>
+          <tr><td>REACT_APP_MEU_LINK_AFILIADO</td><td>https://meli.la/17XoYuZ</td></tr>
+          <tr><td>REACT_APP_JSON2VIDEO_KEY</td><td style="color:#a78bfa">← Sua key do JSON2Video (Passo 3)</td></tr>
+        </table>
+        <div class="alrt" style="margin-top:10px"><strong>⚠️ Atenção:</strong> As 3 linhas em roxo você precisa substituir pelos seus valores pessoais dos passos anteriores!</div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Todas as 9 variáveis adicionadas ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#ffd70022;color:var(--gold);">3</div>
+      <div class="scont" style="flex:1">
+        <h4>Fazer o Deploy final 🚀</h4>
+        <div class="tip">
+          <strong>Passos:</strong><br>
+          1. Após adicionar as variáveis, clique em <strong>Deployments</strong> no menu<br>
+          2. Clique nos <strong>3 pontinhos ···</strong> do deployment mais recente<br>
+          3. Clique em <strong>Redeploy</strong><br>
+          4. Aguarde <strong>2-3 minutos</strong> ☕<br>
+          5. Quando ficar verde aparece seu link!
+        </div>
+        <div class="ok-box"><strong>🎉 Resultado:</strong> Seu app vai estar online em:<br><strong>https://afiliadoai.vercel.app</strong></div>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Deploy concluído com sucesso ✅</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>App abrindo no link do Vercel ✅</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="nav">
+    <button class="nb pv" onclick="go(3)">← Mercado Livre</button>
+    <button class="nb nx" onclick="go(5)">Testar →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PASSO 5 — TESTAR TUDO
+══════════════════════════════════════ -->
+<div class="sec" id="sec5">
+  <div class="sec-hdr">
+    <div class="sec-ico" style="background:#38bdf822;border:1px solid #38bdf833;">✅</div>
+    <div class="sec-ttl">
+      <h2>Passo 5 — Testar Tudo</h2>
+      <p>Verificar se cada função está funcionando corretamente</p>
+    </div>
+    <div class="sec-badge" style="background:#38bdf822;color:var(--blue);border:1px solid #38bdf833;">~30 min</div>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="snum" style="background:#38bdf822;color:var(--blue);">1</div>
+      <div class="scont" style="flex:1">
+        <h4>🔐 Testar Login e Cadastro</h4>
+        <p>Abra o app pelo link do Vercel no celular ou computador</p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Tela de login abre corretamente</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Criei uma conta com e-mail e senha</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Tutorial de 4 passos apareceu (onboarding)</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Consigo entrar com a conta criada</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#38bdf822;color:var(--blue);">2</div>
+      <div class="scont" style="flex:1">
+        <h4>🛒 Testar IA de Produtos</h4>
+        <p>Vá em <strong>Produtos → IA Comparar Preços</strong> → digite "tênis" → clique em <strong>Buscar</strong></p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>IA encontra e compara produtos</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Mostra preço em várias lojas</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Score de oportunidade aparece</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Botão "Criar Vídeo" navega para Vídeos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#38bdf822;color:var(--blue);">3</div>
+      <div class="scont" style="flex:1">
+        <h4>🔗 Testar Analisador de Links</h4>
+        <p>Vá em <strong>Links</strong> → cole <code style="font-family:'DM Mono',monospace;color:var(--neon);font-size:11px">https://meli.la/17XoYuZ</code> → clique em <strong>Analisar</strong></p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Produto é identificado com imagem</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Link encurtado é gerado</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>QR Code aparece ao clicar</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Botão WhatsApp abre mensagem automática</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#38bdf822;color:var(--blue);">4</div>
+      <div class="scont" style="flex:1">
+        <h4>🎬 Testar Criador de Vídeo</h4>
+        <p>Selecione um produto → vá em <strong>Vídeos</strong> → clique em <strong>"🎬 CRIAR VÍDEO IA"</strong></p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Modal de criação abre com as opções</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Cole a API Key do JSON2Video e salve</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Escolhi formato e estilo</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Vídeo foi gerado com sucesso</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#38bdf822;color:var(--blue);">5</div>
+      <div class="scont" style="flex:1">
+        <h4>🚀 Testar Postar em Todas</h4>
+        <p>Após criar o vídeo clique em <strong>"🚀 POSTAR EM TODAS AS PLATAFORMAS"</strong></p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Modal de plataformas abre</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>TikTok abre em nova aba</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Instagram abre em nova aba</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Legenda foi copiada automaticamente</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#38bdf822;color:var(--blue);">6</div>
+      <div class="scont" style="flex:1">
+        <h4>🤖 Testar Bot 24/7</h4>
+        <p>Vá em <strong>Automação</strong> → ative o <strong>Bot IA 24/7</strong></p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Bot ativa e log aparece em tempo real</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Dashboard mostra "🤖 BOT ATIVO"</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Conectei minha conta do TikTok/Instagram</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="snum" style="background:#38bdf822;color:var(--blue);">7</div>
+      <div class="scont" style="flex:1">
+        <h4>📊 Verificar dados no Firebase</h4>
+        <p>Volte ao <a href="https://console.firebase.google.com" target="_blank" style="color:var(--neon)">Firebase Console</a> → Firestore Database → veja se as coleções aparecem</p>
+        <div class="cl">
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Coleção "cliques" aparece no Firestore</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Coleção "vendas" aparece no Firestore</div>
+          <div class="ci" onclick="ck(this)"><div class="cbox"></div>Dashboard mostra dados reais</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="nav">
+    <button class="nb pv" onclick="go(4)">← Variáveis</button>
+    <button class="nb fn" onclick="finish()">🎉 CONCLUÍDO!</button>
+  </div>
+</div>
+
+<!-- COMPLETION -->
+<div class="done-box" id="donebox">
+  <div style="font-size:58px">🎉</div>
+  <h2>App no ar e funcionando!</h2>
+  <p>Seu AfiliadoAI PRO está 100% configurado.<br>Agora é só vender!</p>
+  <div class="next-steps">
+    <div class="ns-title">🚀 O que fazer agora para começar a ganhar:</div>
+    <div class="ns-item"><span>1.</span> Poste seu primeiro vídeo usando o app — use o botão "Criar Vídeo IA"</div>
+    <div class="ns-item"><span>2.</span> Compartilhe o link meli.la/17XoYuZ no WhatsApp para amigos e grupos</div>
+    <div class="ns-item"><span>3.</span> Ative o Bot 24/7 na aba Automação e deixe trabalhando</div>
+    <div class="ns-item"><span>4.</span> Monitore o Dashboard todo dia para ver cliques e comissões</div>
+    <div class="ns-item"><span>5.</span> Adicione mais links de afiliado na aba Links para multiplicar os ganhos</div>
+    <div class="ns-item"><span>💬</span> Qualquer dúvida: volte ao Claude e diga "preciso de ajuda com o AfiliadoAI"</div>
+  </div>
+</div>
+
+<div style="height:40px"></div>
+
+<script>
+let cur = 1;
+const total = 5;
+
+function go(n) {
+  for(let i=1;i<=total;i++){
+    document.getElementById('sec'+i).classList.remove('active');
+    document.getElementById('ov'+i).classList.remove('active');
+  }
+  document.getElementById('sec'+n).classList.add('active');
+  document.getElementById('ov'+n).classList.add('active');
+  cur = n;
+  upd();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function ck(el){
+  el.classList.toggle('ck');
+  el.querySelector('.cbox').textContent = el.classList.contains('ck') ? '✓' : '';
+  upd();
+}
+
+function upd(){
+  const all = document.querySelectorAll('.ci');
+  const ckd = document.querySelectorAll('.ci.ck');
+  const pct = Math.round((ckd.length/all.length)*100);
+  document.getElementById('pfill').style.width = pct+'%';
+  for(let i=1;i<=total;i++){
+    const s = document.getElementById('sec'+i);
+    const t = s.querySelectorAll('.ci').length;
+    const d = s.querySelectorAll('.ci.ck').length;
+    if(t>0 && d===t) document.getElementById('ov'+i).classList.add('done');
+    else document.getElementById('ov'+i).classList.remove('done');
+  }
+}
+
+function finish(){
+  document.getElementById('donebox').classList.add('show');
+  document.getElementById('donebox').scrollIntoView({behavior:'smooth'});
+}
+
+// Copy buttons for code blocks
+document.querySelectorAll('.code').forEach(el=>{
+  const b=document.createElement('button');
+  b.className='cbtn';b.textContent='Copiar';
+  b.onclick=e=>{e.stopPropagation();navigator.clipboard?.writeText(el.textContent.replace(/Copiar|✓ Copiado!/g,'').trim());b.textContent='✓ Copiado!';b.classList.add('ok');setTimeout(()=>{b.textContent='Copiar';b.classList.remove('ok');},2000);};
+  el.appendChild(b);
+});
+</script>
+</body>
+</html>
