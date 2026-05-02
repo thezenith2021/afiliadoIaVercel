@@ -3884,6 +3884,27 @@ function VideoCreatorModal({ product, script, onClose, onVideoReady }) {
     </div>
   );
 }
+const STORE_COLORS = [
+  "#00FFD1",
+  "#0080FF",
+  "#FF4D4D",
+  "#FFD700",
+  "#7B61FF",
+  "#00C853",
+  "#FF6F00",
+  "#FF00AA"
+];
+
+const STORE_ICONS = [
+  "🛒",
+  "🏪",
+  "📦",
+  "💰",
+  "🔥",
+  "⭐",
+  "🎯",
+  "📱"
+];
 export default function App() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const contentRef = useRef(null);
