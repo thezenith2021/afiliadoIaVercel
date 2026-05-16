@@ -742,7 +742,6 @@ function Videos({ videos, links, selProd, goTo, addVideo, delVideo }) {
   const [viralSearch, setViralSearch] = useState("");
   const [viralResults, setViralResults] = useState([]);
   const [viralLoading, setViralLoading] = useState(false);
-  const [viralSelected, setViralSelected] = useState(null);
   const [captionCopied, setCaptionCopied] = useState(false);
 
   const prod = selProd||links[0]||null;
@@ -812,7 +811,7 @@ function Videos({ videos, links, selProd, goTo, addVideo, delVideo }) {
   // Buscar vídeos virais relacionados ao produto
   const searchViralVideos = async () => {
     if (!viralSearch.trim() && !prod) return;
-    setViralLoading(true); setViralResults([]); setViralSelected(null);
+    setViralLoading(true); setViralResults([]);
     const query = viralSearch.trim() || prod?.productName || "produto viral";
     // Use YouTube search API via public endpoint (no key needed for basic search)
     // We search multiple sources and return structured results
