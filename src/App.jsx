@@ -2150,11 +2150,8 @@ async function mlRefreshToken(refresh_token) {
     if (data.error) throw new Error(data.error);
     return data;
   } catch(e) {
-    console.warn("ML refresh failed:", e.message);
     return null;
   }
-}
-
 }
 
 function mlTokenExpired(tokens) {
