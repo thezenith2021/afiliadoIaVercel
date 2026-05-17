@@ -20,16 +20,18 @@ const EMPTY = {
   connectedStores: {},
   queue: [],
   postLogs: [],
+  mlTokens: null,
 };
 
 // ══════════════════════════════════════════════════════
 // MERCADO LIVRE — busca pública sem token
 // ══════════════════════════════════════════════════════
-async function fetchProductML(url) {
+async function fetchProductML(url, accessToken) {
   try {
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
     const idMatch = url.match(/MLB-?(\d+)/i);
     if (idMatch) {
-      const r = await fetch(`https://api.mercadolibre.com/items/MLB${idMatch[1]}`);
+      const r = await fetch(`https://api.mercadolibre.com/items/MLB${idMatch[1]}`, { headers });
       const d = await r.json();
       if (d.title) return {
         name: d.title, price: d.price,
@@ -38,7 +40,7 @@ async function fetchProductML(url) {
         sold: d.sold_quantity || 0,
       };
     }
-    const r2 = await fetch(`https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(url)}&limit=1`);
+    const r2 = await fetch(`https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(url)}&limit=1`, { headers });
     const d2 = await r2.json();
     const item = d2.results?.[0];
     if (item) return {
@@ -396,7 +398,7 @@ function Dashboard({ stats, links, videos, scripts, goTo, updStats }) {
 // ══════════════════════════════════════════════════════
 // LINKS
 // ══════════════════════════════════════════════════════
-function Links({ links, addLink, updateLink, delLink, stats, updStats, goTo, setSelProd }) {
+function Links({ links, addLink, updateLink, delLink, stats, updStats, goTo, setSelProd, mlTokens, setMlTokens }) {
   const [url, setUrl] = useState(""); const [loading, setLoading] = useState(false);
   const [phase, setPhase] = useState(""); const [result, setResult] = useState(null);
   const [showQR, setShowQR] = useState(null); const [copied, setCopied] = useState(null);
@@ -411,7 +413,8 @@ function Links({ links, addLink, updateLink, delLink, stats, updStats, goTo, set
     const store = detectStore(u);
     let prod = null;
     if (u.includes("meli.la")||u.includes("mercadolivre")||u.includes("MLB")||store?.id==="ml") {
-      prod = await fetchProductML(u);
+      const token = await mlGetValidToken(mlTokens, setMlTokens);
+      prod = await fetchProductML(u, token);
     }
     setPhase("✅ Pronto!"); await new Promise(r=>setTimeout(r,300));
     const rate = store?.commission||0.10;
@@ -742,6 +745,7 @@ function Videos({ videos, links, selProd, goTo, addVideo, delVideo }) {
   const [viralSearch, setViralSearch] = useState("");
   const [viralResults, setViralResults] = useState([]);
   const [viralLoading, setViralLoading] = useState(false);
+
   const [captionCopied, setCaptionCopied] = useState(false);
 
   const prod = selProd||links[0]||null;
@@ -811,7 +815,7 @@ function Videos({ videos, links, selProd, goTo, addVideo, delVideo }) {
   // Buscar vídeos virais relacionados ao produto
   const searchViralVideos = async () => {
     if (!viralSearch.trim() && !prod) return;
-    setViralLoading(true); setViralResults([]);
+    setViralLoading(true); setViralResults([]); 
     const query = viralSearch.trim() || prod?.productName || "produto viral";
     // Use YouTube search API via public endpoint (no key needed for basic search)
     // We search multiple sources and return structured results
@@ -1107,7 +1111,7 @@ function Contas({ accs, setAccs, bestTimes, setBestTimes }) {
 // ══════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════
-function Config({ settings, setSetts, customStores, setCustomStores, connectedStores, setConnectedStores, onLogout }) {
+function Config({ settings, setSetts, customStores, setCustomStores, connectedStores, setConnectedStores, mlTokens, setMlTokens, onLogout }) {
   const [addStore, setAddStore] = useState(false);
   const [sf, setSf] = useState({ name:"", comm:"", ico:"🛒", color:C.neon });
   const ICONS=["🛒","📦","🛍️","👗","🏷️","🌿","💄","🍫","🏪","💅","👠","🎁","🧴","📱","💻","🎮","🍕","☕","🌺","💍"];
@@ -1169,7 +1173,49 @@ function Config({ settings, setSetts, customStores, setCustomStores, connectedSt
         <div style={{ color:C.t1,fontWeight:700,fontSize:13,marginBottom:10 }}>🔑 APIs</div>
         <div style={{ color:C.t3,fontSize:11,lineHeight:1.7 }}>
           <div style={{ marginBottom:6 }}>• <strong style={{ color:C.t2 }}>JSON2Video:</strong> Cole na aba Vídeos · <a href="https://json2video.com/get-api-key/" target="_blank" rel="noreferrer" style={{ color:C.neon }}>Pegar grátis →</a></div>
-          <div>• <strong style={{ color:C.t2 }}>Mercado Livre:</strong> Configure REACT_APP_ML_ACCESS_TOKEN no Vercel</div>
+          <div>• <strong style={{ color:"#9b72f7" }}>IA (ARIA):</strong> Configure ANTHROPIC_API_KEY no Vercel</div>
+        </div>
+
+        {/* ML OAuth Connect */}
+        <div style={{ marginTop:14, paddingTop:14, borderTop:`1px solid ${C.b1}` }}>
+          <div style={{ color:C.t1, fontWeight:700, fontSize:13, marginBottom:8 }}>🛒 Mercado Livre — Token Automático</div>
+          {mlTokens && mlTokens.access_token ? (
+            <div>
+              <div style={{ background:"#FFE60012", border:"1px solid #FFE60030", borderRadius:10, padding:"10px 12px", marginBottom:8 }}>
+                <div style={{ color:"#FFE600", fontWeight:700, fontSize:12 }}>✅ Conta ML conectada!</div>
+                {mlTokens.user_id && <div style={{ color:C.t3, fontSize:11, marginTop:2 }}>User ID: {mlTokens.user_id}</div>}
+                <div style={{ color:C.t3, fontSize:11, marginTop:2 }}>
+                  {mlTokenExpired(mlTokens) ? "⚠️ Token expirado — renovando..." : "✅ Token válido · Renovação automática ativa"}
+                </div>
+              </div>
+              <button onClick={()=>setMlTokens(null)} style={{ background:C.red+"18", border:`1px solid ${C.red}30`, borderRadius:10, padding:"7px 14px", color:C.red, fontSize:12, fontWeight:700, cursor:"pointer" }}>
+                🔌 Desconectar
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ color:C.t3, fontSize:11, lineHeight:1.7, marginBottom:10 }}>
+                Conecte sua conta ML para buscar preços reais. O token renova automaticamente a cada 6 horas — sem precisar refazer.
+              </div>
+              <div style={{ background:C.gold+"10", border:`1px solid ${C.gold}25`, borderRadius:10, padding:"9px 12px", marginBottom:10 }}>
+                <div style={{ color:C.gold, fontSize:11, fontWeight:700, marginBottom:4 }}>⚙️ Configure no Vercel:</div>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.t3, lineHeight:2 }}>
+                  ML_CLIENT_ID = seu_client_id<br/>
+                  ML_CLIENT_SECRET = seu_client_secret<br/>
+                  ML_REDIRECT_URI = https://seu-app.vercel.app
+                </div>
+                <a href="https://developers.mercadolivre.com.br" target="_blank" rel="noreferrer" style={{ color:C.neon, fontSize:11, display:"inline-block", marginTop:6 }}>Criar app ML Developers →</a>
+              </div>
+              <button onClick={()=>{
+                try {
+                  const redirectUri = encodeURIComponent(window.location.origin);
+                  window.open("https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=SEU_CLIENT_ID&redirect_uri=" + redirectUri, "_blank");
+                } catch(e) {}
+              }} style={{ background:"linear-gradient(135deg,#FFE600,#FF9900)", border:"none", borderRadius:10, padding:"10px 20px", color:"#000", fontWeight:800, fontSize:13, cursor:"pointer", width:"100%" }}>
+                🛒 Conectar Mercado Livre
+              </button>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -2089,10 +2135,63 @@ function Fila({ queue, setQueue, postLogs, setPostLogs, links, scripts }) {
   );
 }
 
+
+// ══════════════════════════════════════════════════════
+// MERCADO LIVRE — Token Manager com auto-refresh
+// ══════════════════════════════════════════════════════
+async function mlRefreshToken(refresh_token) {
+  try {
+    const res = await fetch("/api/ml-refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch(e) {
+    console.warn("ML refresh failed:", e.message);
+    return null;
+  }
+}
+
+async function mlExchangeCode(code) {
+  try {
+    const res = await fetch("/api/ml-refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch(e) {
+    return null;
+  }
+}
+
+function mlTokenExpired(tokens) {
+  if (!tokens?.expires_at) return true;
+  // Renova se faltar menos de 30 minutos
+  return Date.now() > tokens.expires_at - 30 * 60 * 1000;
+}
+
+async function mlGetValidToken(tokens, setTokens) {
+  if (!tokens) return process.env.REACT_APP_ML_ACCESS_TOKEN || null;
+  if (!mlTokenExpired(tokens)) return tokens.access_token;
+  if (!tokens.refresh_token) return tokens.access_token;
+  // Renova automaticamente
+  const newTokens = await mlRefreshToken(tokens.refresh_token);
+  if (newTokens) { setTokens(newTokens); return newTokens.access_token; }
+  return tokens.access_token; // fallback
+}
+
 export default function App() {
   const [st, setSt] = useState(()=>{ const s=load(); return s?{...EMPTY,...s}:EMPTY; });
   const [tab, setTab] = useState("Dashboard");
   const [selProd, setSelProd] = useState(null);
+  const mlTokens = st.mlTokens;
+  const setMlTokens = (tokens) => up({ mlTokens: tokens });
 
   useEffect(()=>{ save(st); },[st]);
 
@@ -2115,14 +2214,14 @@ export default function App() {
   const render = () => {
     switch(tab) {
       case "Dashboard": return <Dashboard stats={st.stats} links={st.links} videos={st.videos} scripts={st.scripts||[]} goTo={goTo} updStats={updStats}/>;
-      case "Links":     return <Links links={st.links} addLink={addLink} updateLink={updateLink} delLink={delLink} stats={st.stats} updStats={updStats} goTo={goTo} setSelProd={setSelProd}/>;
+      case "Links":     return <Links links={st.links} addLink={addLink} updateLink={updateLink} delLink={delLink} stats={st.stats} updStats={updStats} goTo={goTo} setSelProd={setSelProd} mlTokens={mlTokens} setMlTokens={setMlTokens}/>;
       case "Mensagens": return <Mensagens links={st.links}/>;
       case "Roteiros":  return <Roteiros links={st.links} selProd={selProd} setSelProd={setSelProd} scripts={st.scripts||[]} addScript={addScript} delScript={delScript} goTo={goTo}/>;
       case "Vídeos":    return <Videos videos={st.videos} links={st.links} selProd={selProd} goTo={goTo} addVideo={addVideo} delVideo={delVideo}/>;
       case "Fila":      return <Fila queue={st.queue||[]} setQueue={q=>up({queue:q})} postLogs={st.postLogs||[]} setPostLogs={l=>up({postLogs:l})} links={st.links} scripts={st.scripts||[]} />;
       case "IA":        return <AIManager stats={st.stats} links={st.links} videos={st.videos} scripts={st.scripts||[]} queue={st.queue||[]} connectedAccounts={st.connectedAccounts||{}} />;
       case "Contas":    return <Contas accs={st.connectedAccounts} setAccs={a=>up({connectedAccounts:a})} bestTimes={st.bestTimes} setBestTimes={t=>up({bestTimes:t})}/>;
-      case "Config":    return <Config settings={st.settings} setSetts={s=>up({settings:s})} customStores={st.customStores||[]} setCustomStores={c=>up({customStores:c})} connectedStores={st.connectedStores||{}} setConnectedStores={f=>up({connectedStores:typeof f==="function"?f(st.connectedStores):f})} onLogout={logout}/>;
+      case "Config":    return <Config settings={st.settings} setSetts={s=>up({settings:s})} customStores={st.customStores||[]} setCustomStores={c=>up({customStores:c})} connectedStores={st.connectedStores||{}} setConnectedStores={f=>up({connectedStores:typeof f==="function"?f(st.connectedStores):f})} mlTokens={mlTokens} setMlTokens={setMlTokens} onLogout={logout}/>;
       default: return null;
     }
   };
