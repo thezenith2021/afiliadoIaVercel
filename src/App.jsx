@@ -2155,19 +2155,6 @@ async function mlRefreshToken(refresh_token) {
   }
 }
 
-async function mlExchangeCode(code) {
-  try {
-    const res = await fetch("/api/ml-refresh", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    return data;
-  } catch(e) {
-    return null;
-  }
 }
 
 function mlTokenExpired(tokens) {
